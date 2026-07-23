@@ -1,0 +1,123 @@
+{% extends 'predictor/base.html' %}
+{% block title %}Predictor{% endblock %}
+{% block content %}
+
+<h1>Music Emotion Predictor</h1>
+<p style="color:#555;">Enter audio features to predict the emotional quadrant, or try a preset example below.</p>
+
+<div style="margin-bottom:20px;">
+    <button type="button" onclick="fillPreset('happy')" style="padding:10px 18px; margin-right:10px; background:#f5b700; border:none; border-radius:6px; cursor:pointer;">Try: Upbeat Pop</button>
+    <button type="button" onclick="fillPreset('sad')" style="padding:10px 18px; margin-right:10px; background:#5c6784; color:white; border:none; border-radius:6px; cursor:pointer;">Try: Sad Ballad</button>
+    <button type="button" onclick="fillPreset('angry')" style="padding:10px 18px; margin-right:10px; background:#e63946; color:white; border:none; border-radius:6px; cursor:pointer;">Try: Aggressive Rock</button>
+    <button type="button" onclick="fillPreset('calm')" style="padding:10px 18px; background:#4ea8de; color:white; border:none; border-radius:6px; cursor:pointer;">Try: Calm Acoustic</button>
+</div>
+
+<div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(200,120,255,0.15); backdrop-filter: blur(6px); padding:30px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <form method="POST" id="predictForm">
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div>
+                <label>Danceability (0-1)</label>
+                <input type="number" step="0.01" min="0" max="1" name="danceability" id="danceability" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">How suitable the track is for dancing — 0 = not danceable, 1 = highly danceable.</small>
+            </div>
+            <div>
+                <label>Loudness (dB, -60 to 0)</label>
+                <input type="number" step="0.01" name="loudness" id="loudness" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">Overall loudness in decibels. Closer to 0 = louder/more compressed mastering.</small>
+            </div>
+            <div>
+                <label>Mode</label>
+                <select name="mode" id="mode" required style="width:100%; padding:8px; margin-top:4px;">
+                    <option value="1">Major</option>
+                    <option value="0">Minor</option>
+                </select>
+                <small style="color:#8b7fb0;">Major keys often sound brighter; minor keys often sound darker.</small>
+            </div>
+            <div>
+                <label>Speechiness (0-1)</label>
+                <input type="number" step="0.01" min="0" max="1" name="speechiness" id="speechiness" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">Presence of spoken words — near 0 for music, higher for podcasts/rap/spoken word.</small>
+            </div>
+            <div>
+                <label>Acousticness (0-1)</label>
+                <input type="number" step="0.01" min="0" max="1" name="acousticness" id="acousticness" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">Confidence the track is acoustic (unplugged) rather than electronic/produced.</small>
+            </div>
+            <div>
+                <label>Instrumentalness (0-1)</label>
+                <input type="number" step="0.01" min="0" max="1" name="instrumentalness" id="instrumentalness" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">Likelihood the track has no vocals — closer to 1 = purely instrumental.</small>
+            </div>
+            <div>
+                <label>Liveness (0-1)</label>
+                <input type="number" step="0.01" min="0" max="1" name="liveness" id="liveness" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">Probability the track was recorded live (audience noise present).</small>
+            </div>
+            <div>
+                <label>Tempo (BPM)</label>
+                <input type="number" step="0.01" min="0" name="tempo" id="tempo" required style="width:100%; padding:8px; margin-top:4px;">
+                <small style="color:#8b7fb0;">Speed of the track in beats per minute.</small>
+            </div>
+            <div>
+                <label>Time Signature</label>
+                <select name="time_signature" id="time_signature" required style="width:100%; padding:8px; margin-top:4px;">
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                </select>
+                <small style="color:#8b7fb0;">Beats per bar — most popular music is in 4.</small>
+            </div>
+            <div>
+                <label>Musical Key (0=C ... 11=B)</label>
+                <select name="key" id="key" required style="width:100%; padding:8px; margin-top:4px;">
+                    {% for i in "0123456789" %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                </select>
+                <small style="color:#8b7fb0;">The track's musical pitch class (0=C, 1=C#, 2=D, ... 11=B).</small>
+            </div>
+        </div>
+        <button type="submit" style="margin-top:24px; padding:12px 30px; background:#1d1f33; color:white; border:none; border-radius:6px; font-size:16px; cursor:pointer;">
+            Predict Emotion
+        </button>
+    </form>
+</div>
+
+{% if result %}
+<div style="margin-top:30px; background: rgba(255,255,255,0.05); border: 1px solid rgba(200,120,255,0.15); backdrop-filter: blur(6px); padding:30px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:8px solid {{ emotion_color }};">
+    <h2 style="margin-top:0;">Predicted Emotion: <span style="color:{{ emotion_color }};">{{ result }}</span></h2>
+    <p style="color:#c9bfe8;">{{ emotion_desc }}</p>
+    <p><strong>Confidence:</strong> {{ confidence }}%</p>
+
+    <h4 style="margin-top:20px;">Full Probability Breakdown</h4>
+    {% for emotion, prob in probabilities %}
+    <div style="margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:14px;">
+            <span>{{ emotion }}</span><span>{{ prob }}%</span>
+        </div>
+        <div style="background:#eee; border-radius:4px; height:10px; overflow:hidden;">
+            <div style="width:{{ prob }}%; background:#1d1f33; height:100%;"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+const presets = {
+    happy: {danceability:0.78, loudness:-4.5, mode:1, speechiness:0.05, acousticness:0.08, instrumentalness:0.0, liveness:0.12, tempo:128, time_signature:4, key:0},
+    sad:   {danceability:0.30, loudness:-12.0, mode:0, speechiness:0.03, acousticness:0.75, instrumentalness:0.1, liveness:0.10, tempo:75, time_signature:4, key:5},
+    angry: {danceability:0.45, loudness:-3.0, mode:0, speechiness:0.08, acousticness:0.02, instrumentalness:0.05, liveness:0.30, tempo:150, time_signature:4, key:2},
+    calm:  {danceability:0.40, loudness:-15.0, mode:1, speechiness:0.03, acousticness:0.85, instrumentalness:0.4, liveness:0.08, tempo:85, time_signature:3, key:7}
+};
+
+function fillPreset(type) {
+    const p = presets[type];
+    for (const key in p) {
+        document.getElementById(key).value = p[key];
+    }
+}
+</script>
+
+{% endblock %}

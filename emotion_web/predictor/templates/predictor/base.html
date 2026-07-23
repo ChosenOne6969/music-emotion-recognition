@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Music Emotion Predictor{% endblock %}</title>
+    <style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        background: linear-gradient(160deg, #1a0b2e 0%, #2d1b4e 50%, #1a0b2e 100%);
+        color: #e8e3f5;
+        min-height: 100vh;
+    }
+    nav {
+        background: rgba(15, 8, 30, 0.85);
+        backdrop-filter: blur(8px);
+        padding: 16px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(200, 120, 255, 0.2);
+    }
+    nav .brand {
+        background: linear-gradient(90deg, #ff6ec7, #a78bfa, #60d9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 22px;
+        font-weight: bold;
+    }
+    nav a {
+        color: #c9bfe8;
+        text-decoration: none;
+        margin-left: 28px;
+        font-size: 15px;
+        transition: color 0.2s;
+    }
+    nav a:hover { color: #ff6ec7; }
+    .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    footer { text-align: center; padding: 24px; color: #6e6591; font-size: 13px; margin-top: 60px; }
+    h1, h2, h3 { color: #f0eaff; }
+    input, select {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(200,120,255,0.3);
+        color: #f0eaff;
+        border-radius: 6px;
+    }
+    input:focus, select:focus { outline: none; border-color: #a78bfa; }
+</style>
+</head>
+<body>
+    <nav>
+        <div class="brand">🎵 Emotion from Frequency</div>
+        <div>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'predict_emotion' %}">Predictor</a>
+            <a href="{% url 'about' %}">Model Insights</a>
+            <a href="{% url 'upload_predict' %}">Upload Song</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>From Frequency to Feeling — Music Emotion Recognition Project</footer>
+</body>
+</html>

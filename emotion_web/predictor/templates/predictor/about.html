@@ -1,0 +1,25 @@
+{% extends 'predictor/base.html' %}
+{% load static %}
+{% block title %}Model Insights{% endblock %}
+{% block content %}
+
+<h1>Model Insights</h1>
+<p style="color:#555;">How the model was built, evaluated, and interpreted.</p>
+
+<div style="background:white; padding:24px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:20px;">
+    <h3>Model</h3>
+    <p style="color:#555;">Tuned XGBoost classifier, trained on Spotify audio features (danceability, loudness, acousticness, and others), excluding valence and energy to avoid label leakage since these constructed the emotion labels.</p>
+    <p><strong>Test Accuracy:</strong> 67.3% &nbsp;|&nbsp; <strong>Macro F1:</strong> 0.666</p>
+</div>
+
+<div style="background:white; padding:24px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:20px;">
+    <h3>Confusion Matrix</h3>
+    <img src="{% static 'predictor/confusion_matrix.png' %}" style="max-width:100%; border-radius:6px;">
+</div>
+
+<div style="background:white; padding:24px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h3>SHAP Feature Importance</h3>
+    <img src="{% static 'predictor/shap_summary.png' %}" style="max-width:100%; border-radius:6px;">
+</div>
+
+{% endblock %}
